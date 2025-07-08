@@ -93,7 +93,7 @@ exports.BusinessInformationpage =
 
             this.errorForm_okbutton = "//button[@class='swal2-confirm btn btn-danger']"
 
-            this.selfcertification_filedvalidations = "//label[normalize-space()='This field is required.']"
+            this.selfcertification_fieldvalidations = "//label[normalize-space()='This field is required.']"
 
 
         }
@@ -103,7 +103,7 @@ exports.BusinessInformationpage =
 
             const filePath = path.join(__dirname, '../companyname.json');
             const { company_name } = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-            const domain = company_name.toLowerCase().replace(/[^a-z0-9]/g, '')  + '.com';
+            const domain = company_name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
             const companyUrl = `https://www.${domain}`
 
             await this.page.locator(this.CompanyType).selectOption('Company')
@@ -116,21 +116,27 @@ exports.BusinessInformationpage =
             await this.page.fill(this.CompanyContactPosition, 'Manager')
             await this.page.locator(this.CompanyJurisdiction).selectOption("14")
             await this.page.fill(this.CompanyUrl, companyUrl)
-    
+
 
         }
 
-        async companyDetailsValidation(){
+        async companyDetailsValidation() {
 
             await this.page.click(this.next_button)
             await this.page.waitForSelector(this.companyDetails_fieldvalidations)
-            const validation_text = await this.page.locator(this.companyDetails_fieldvalidations).textContent()
+            console.log("Validating Company Details Validation")
+
             const Total_validations = await this.page.locator(this.companyDetails_fieldvalidations).all();
-            if (errors.length === 7) {
-                console.log(' All 8 validation messages are displayed as expected.');
-                console.log("validation message displayed is - "+validation_text)
+
+            expect(Total_validations.length).toBe(7)
+            const Validation_text = await Total_validations[0].textContent();
+            if (Total_validations.length === 7) {
+                console.log(' All 7 validation messages are displayed as expected.');
+                console.log("validation message displayed is - " + Validation_text)
             }
-            expect(Total_validations.length).toBe(7);
+            else {
+                console.warn("⚠️ Not all validation messages are as expected.");
+            }
         }
 
 
@@ -140,9 +146,9 @@ exports.BusinessInformationpage =
 
             await this.page.waitForSelector(this.second_collapsible)
             await this.page.click(this.second_collapsible)
-            
+
             await this.page.click(this.Add_newbutton)
-            await this.page.locator(this.AddressType).selectOption(["12","15"])
+            await this.page.locator(this.AddressType).selectOption(["12", "15"])
             await this.page.fill(this.StreetName, '8th Avenue')
             await this.page.fill(this.StreetNumber, '789')
             await this.page.fill(this.Postcode, '10036')
@@ -153,29 +159,35 @@ exports.BusinessInformationpage =
             const email = faker.internet.email()
             await this.page.fill(this.email, email)
 
-            await this.page.click(this.submit_button) 
+            await this.page.click(this.submit_button)
 
         }
 
-        async companyAddressValidationForEmptyfields_and_InvalidDatas(){
+        async companyAddressValidationForEmptyfields_and_InvalidDatas() {
 
             //empty field validation
+            await this.page.reload();
             await this.page.waitForSelector(this.second_collapsible)
             await this.page.click(this.second_collapsible)
             await this.page.click(this.Add_newbutton)
             await this.page.waitForSelector(this.submit_button)
             await this.page.click(this.submit_button)
-            const validation_text = await this.page.locator(this.BusinessAddress_fieldvalidations).textContent()
-            const Total_validations = await this.page.locator(this.BusinessAddress_fieldvalidations).all();
-            if (errors.length === 6) {
-                console.log(' All 6 validation messages are displayed as expected.');
-                console.log("validation message displayed under each field - "+validation_text)
+
+            const Total_validations = await this.page.locator(this.BusinessAddress_fieldvalidations).all()
+            expect(Total_validations.length).toBe(6)
+            const Validation_text = await Total_validations[0].textContent();
+            if (Total_validations.length === 6) {
+                console.log(' All 6 validation messages are displayed as expected.')
+                console.log("validation message displayed under each field - " + Validation_text)
             }
-            expect(Total_validations.length).toBe(6);
+            else {
+                console.warn("⚠️ Not all validation messages are as expected.");
+            }
+
             await this.page.waitForTimeout(3000)
 
             //Invalid data validation
-            await this.page.locator(this.AddressType).selectOption(["12","15"])
+            await this.page.locator(this.AddressType).selectOption(["12", "15"])
             await this.page.fill(this.StreetName, 'New street')  //invalid street name
             await this.page.fill(this.StreetNumber, '567')  //invalid street number
             await this.page.fill(this.Postcode, '135789')  // invalid postcode
@@ -184,17 +196,21 @@ exports.BusinessInformationpage =
             await this.page.fill(this.phone, '22456787')
             const email = faker.internet.email()
             await this.page.fill(this.email, email)
-            await this.page.click(this.submit_button) 
-            await expect(this.invalidData_errorForm).toBeVisible()
-            if(await this.invalidData_errorForm.isVisible()){
+            await this.page.click(this.submit_button)
+            await expect(this.page.locator(this.invalidData_errorForm)).toBeVisible()
+            if (await this.page.locator(this.invalidData_errorForm).isVisible()) {
                 await this.page.click(this.errorForm_okbutton)
             }
 
         }
 
 
-        async completeSelfCertification(){
-            
+
+
+
+        async completeSelfCertification() {
+
+
             await this.page.click(this.selfcertification_collapse)
             await this.page.click(this.radiobutton_1)
             await this.page.click(this.radiobutton_2)
@@ -202,7 +218,7 @@ exports.BusinessInformationpage =
             await this.page.locator(this.best_describe_your_business).selectOption("186")
             await this.page.click(this.addnew_button)
             await this.page.locator(this.secondCountry).selectOption("14")
-            await this.page.fill(this.documentType,"private")
+            await this.page.fill(this.documentType, "private")
             await this.page.locator(this.ssn_dropdown).selectOption("191")
             await this.page.click(this.second_submitbutton)
             await this.page.click(this.next_button)
@@ -210,10 +226,12 @@ exports.BusinessInformationpage =
             const expectedmessage = "Business information has been successfully saved."
             expect(actualmessage?.trim()).toBe(expectedmessage);
 
-       }
+        }
 
-       async selfCertification_validation(){
+        async selfCertification_validation() {
 
+            await this.page.reload()
+            await this.page.waitForSelector(this.selfcertification_collapse)
             await this.page.click(this.selfcertification_collapse)
             await this.page.click(this.radiobutton_1)
             await this.page.click(this.radiobutton_2)
@@ -221,36 +239,19 @@ exports.BusinessInformationpage =
             await this.page.locator(this.best_describe_your_business).selectOption("186")
             await this.page.click(this.addnew_button)
             await this.page.click(this.second_submitbutton)
-            const validation_text = await this.page.locator(this.selfcertification_filedvalidations).textContent()
-            const Total_validations = await this.page.locator(this.selfCertification_validation).all();
-            if (errors.length === 4) {
-                console.log(' All 8 validation messages are displayed as expected.');
-                console.log("validation message displayed is - "+validation_text)
+
+            const Total_validations = await this.page.locator(this.selfcertification_fieldvalidations).all();
+            expect(Total_validations.length).toBe(4)
+            const Validation_text = await Total_validations[0].textContent();
+            if (Total_validations.length === 4) {
+                console.log(' All 4 validation messages are displayed as expected.');
+                console.log("validation message displayed is - " + Validation_text)
             }
-            expect(Total_validations.length).toBe(4);
+            else {
+                console.warn(" Not all validation messages are as expected.");
+            }
 
-       }
-            
-            
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        }
 
 
     }

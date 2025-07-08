@@ -72,6 +72,11 @@ exports.Beneficiarypage =
 
       this.ok_got_it = "//button[@class='swal2-confirm btn btn-primary']"
 
+      this.dashboard = "//span[normalize-space()='Dashboard']"
+
+      this.beneficiary_list = "(//div[@class='card-body'])[1]"
+
+
 
     }
 
@@ -90,12 +95,13 @@ exports.Beneficiarypage =
       const filePath = path.join(__dirname, '../beneficiary_company.json');
       let data = {};
       if (fs.existsSync(filePath)) {
-        data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));}
+        data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      }
 
-        data.euro_beneficiary_company_name = euro_beneficiary_company_name;
+      data.euro_beneficiary_company_name = euro_beneficiary_company_name;
 
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-      
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
 
       await this.page.fill(this.addressline_1, '116 Invalidenstraße')
       await this.page.fill(this.city, 'Berlin')
@@ -117,7 +123,6 @@ exports.Beneficiarypage =
     }
 
 
-
     async verifyAddingBankAccountdetails() {
 
       await this.page.click(this.add_bank_account_details)
@@ -130,7 +135,7 @@ exports.Beneficiarypage =
 
       await this.page.click(this.fetch_bank_details)
       await this.page.waitForSelector(this.iban_no)
-      await this.page.fill(this.iban_no, 'DE44TCCL16359677847092')
+      await this.page.fill(this.iban_no, 'DE44TCCL16350677847092')
       await this.page.fill(this.bank_name, 'Commerzbank')
       await this.page.fill(this.bank_address_1, '114 Friedrichstraße')
       await this.page.fill(this.bank_city, 'Berlin')
@@ -152,9 +157,9 @@ exports.Beneficiarypage =
       await this.page.waitForTimeout(2000)
       await this.page.locator(this.beneficiary_type).selectOption('Company')
 
-      const aud_beneficiary_company_name = faker.company.name();
+      const aud_beneficiary_company_name = faker.company.name()
       await this.page.fill(this.company_name, aud_beneficiary_company_name)
-      const filePath = path.join(__dirname, '../beneficiary_company.json');
+      const filePath = path.join(__dirname, '../beneficiary_company.json')
       let data = {};
       if (fs.existsSync(filePath)) {
         data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
@@ -181,9 +186,6 @@ exports.Beneficiarypage =
       await this.page.waitForSelector(this.add_bank_account_details)
 
 
-      //const filePath = path.join(__dirname, '../beneficiary_company.json');
-      //fs.writeFileSync(filePath, JSON.stringify({ aud_beneficiary_company_name }));
-
       await this.page.click(this.add_bank_account_details)
       await this.page.locator(this.beneficiary_currency).selectOption('aud | AUD')
       await this.page.locator(this.add_bank_account_country).selectOption('Germany')
@@ -194,7 +196,7 @@ exports.Beneficiarypage =
 
       await this.page.click(this.fetch_bank_details)
       await this.page.waitForSelector(this.account_number)
-      await this.page.fill(this.account_number, '22354545')
+      await this.page.fill(this.account_number, '22354000')
       await this.page.fill(this.bic_swift, '451545')
 
       await this.page.fill(this.bank_name, 'Commerzbank')
@@ -205,13 +207,31 @@ exports.Beneficiarypage =
       await this.page.click(this.save_changes_button)
       await this.page.waitForSelector(this.ok_got_it)
       await this.page.click(this.ok_got_it)
+      await this.page.waitForTimeout(2000)
+      await this.page.click(this.dashboard)
+      await this.page.click(this.aud_wallet)
+      await this.page.click(this.manage_beneficiaries)
+      await this.page.waitForSelector(this.beneficiary_list)
+      const beneficiary_list = await this.page.locator(this.beneficiary_list).all()
+
+      let found = false
+      for (const entry of beneficiary_list) {
+
+        const text = await entry.textContent();
+        if (text.includes(aud_beneficiary_company_name)) {
+          found = true;
+          console.log(` Beneficiary "${aud_beneficiary_company_name}" is listed.`)
+          break;
+        }
+
+      }
+      if (!found) {
+        console.error(` Beneficiary "${aud_beneficiary_company_name}" not found in the list.`)
+        throw new Error("Beneficiary not listed after creation.")
+      }
+
 
     }
-
-
-
-
-
 
 
   }

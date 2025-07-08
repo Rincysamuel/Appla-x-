@@ -56,8 +56,6 @@ exports.BusinessOfficialspage =
 
             this.issuedate_field = "//input[@id='id_issue_date']"
 
-            //this.dates_from_currentmonth = "//div[contains(@class, 'caleran-days-container') and not(contains(@class, 'old')) and not(contains(@class, 'new'))]"
-
             this.currentmonth_header = "//div[@class='caleran-title']"
 
             this.nextmonth_arrow = "//div[@class='caleran-next']"
@@ -82,14 +80,16 @@ exports.BusinessOfficialspage =
 
             this.dialogbox = "//div[@id='swal2-html-container']"
 
+            this.businessOfficials_fieldvalidations = "//label[normalize-space()='This field is required.']"
 
 
         }
 
+
         async fillBusinessofficialdetails() {
 
-            const firstName = faker.person.firstName();
-            const lastName = faker.person.lastName();
+            const firstName = faker.person.firstName()
+            const lastName = faker.person.lastName()
 
             await this.page.click(this.ok_button)
             await this.page.click(this.businessoff_addnewbutton)
@@ -101,7 +101,7 @@ exports.BusinessOfficialspage =
             await this.page.fill(this.lastname, lastName)
 
             const filePath = path.join(__dirname, '../businessofficial.json');
-            fs.writeFileSync(filePath, JSON.stringify({ fullName: `${firstName} ${lastName}` }));
+            fs.writeFileSync(filePath, JSON.stringify({ fullName: `${firstName} ${lastName}` }))
 
             await this.page.fill(this.homeaddress, "1 Martin Place")
             await this.page.fill(this.cityname, "Sydney")
@@ -114,11 +114,11 @@ exports.BusinessOfficialspage =
             await this.page.click(this.previous_year_arrow)
             await this.page.click(this.selectdob_year)
             await this.page.click(this.selectdob_day)
-            await this.page.locator(this.nationality).selectOption({ label: 'Australian' });
-            await this.page.locator(this.country_of_citizenship).selectOption({ label: 'Australia' });
-            await this.page.locator(this.country_of_birth).selectOption({ label: 'Australia' });
-            await this.page.locator(this.country_of_residence).selectOption({ label: 'Australia' });
-            await this.page.locator(this.identification_type).selectOption({ label: 'Passport' });
+            await this.page.locator(this.nationality).selectOption({ label: 'Australian' })
+            await this.page.locator(this.country_of_citizenship).selectOption({ label: 'Australia' })
+            await this.page.locator(this.country_of_birth).selectOption({ label: 'Australia' })
+            await this.page.locator(this.country_of_residence).selectOption({ label: 'Australia' })
+            await this.page.locator(this.identification_type).selectOption({ label: 'Passport' })
             await this.page.fill(this.identification_number, "5467")
 
             await this.page.click(this.issuedate_field)
@@ -130,13 +130,29 @@ exports.BusinessOfficialspage =
             await this.page.click(this.expirydate_yearselect)
             await this.page.click(this.expirydate_select)
 
-            await this.page.locator(this.identification_issue).selectOption({ label: 'Canada' });
+            await this.page.locator(this.identification_issue).selectOption({ label: 'Canada' })
             await this.page.click(this.businessofficial_submit)
             await this.page.click(this.businessofficial_next)
 
             const actualmessage = await this.page.locator(this.dialogbox).textContent()
             const expectedmessage = "Business officials has been successfully saved."
             expect(actualmessage?.trim()).toBe(expectedmessage)
+
+        }
+
+        async checkBusinessofficial_validations() {        
+
+            await this.page.click(this.ok_button)
+            await this.page.click(this.businessoff_addnewbutton)
+            await this.page.click(this.businessofficial_submit)
+            console.log("Validating Business official field validations....")
+            const Total_validations = await this.page.locator(this.businessOfficials_fieldvalidations).all()
+            expect(Total_validations.length).toBe(16)
+            const Validation_text = await Total_validations2[0].textContent()
+            if (Total_validations.length === 16) {
+                console.log(' All 16 validation messages are displayed as expected.')
+                console.log("validation message displayed is - "+Validation_text)
+            }
 
         }
     }

@@ -70,6 +70,18 @@ exports.BusinessProfilepage =
 
             this.businessProfile_fieldvalidation = "//label[normalize-space()='This field is required.']"
 
+            this.sourceOfFund_fieldValidation = "//label[normalize-space()='This field is required.']"
+
+            this.sourceOfWealth_fieldValidation = "//label[normalize-space()='This field is required.']"
+
+
+            this.pep_toggle = "//*[contains(text(), ' Politically Exposed Persons (PEP)')]"
+
+            this.pep_addNew_button = "//a[@id='pep_drawer_button']"
+
+            this.pep_submit = "(//button[@class='btn btn-dark mt-5'])[5]"
+
+            this.pep_fieldValidation = "//label[normalize-space()='This field is required.']"
 
         }
 
@@ -106,17 +118,20 @@ exports.BusinessProfilepage =
         async companyProfileValidations(){
             
 
-            await this.page.waitForSelector(this.ok_button, { state: 'visible' });
+            await this.page.waitForSelector(this.ok_button, { state: 'visible' })
             await this.page.click(this.ok_button)
             await this.page.waitForTimeout(3000)
             await this.page.click(this.nextbutton)
-            const validation_text = await this.page.locator(this.businessProfile_fieldvalidation).textContent()
-            const Total_validations = await this.page.locator(this.businessProfile_fieldvalidation).all();
-            if (errors.length === 7) {
-                console.log(' All 8 validation messages are displayed as expected.');
-                console.log("validation message displayed is - "+validation_text)
+            console.log("Validating Company Profile validations....")
+            const Total_validations = await this.page.locator(this.businessProfile_fieldvalidation).all()
+            expect(Total_validations.length).toBe(4)
+            const Validation_text = await Total_validations[0].textContent()
+            if (Total_validations.length === 4) {
+                console.log(' All 4 validation messages are displayed as expected.')
+                console.log("validation message displayed is - "+Validation_text)
             }
-            expect(Total_validations.length).toBe(7);
+            await this.page.reload()
+
         }
 
         async fillsourceOfWealth() {
@@ -143,7 +158,55 @@ exports.BusinessProfilepage =
             const actualmessage = await this.page.locator(this.dialogbox).textContent()
             const expectedmessage = "Business profile has been successfully saved."
             expect(actualmessage?.trim()).toBe(expectedmessage)
-
         }
+
+        async fillsourceOfWealth_and_ExpectedTurnover_Validations() {
+
+            //source of fund validation
+            await this.page.click(this.sourceOfWealth_toggle)
+            await this.page.click(this.sourceoffund_addnewbutton)
+
+            await this.page.click(this.source_submitbutton)
+            console.log("Validating source of fund validations....")
+            const Total_validations = await this.page.locator(this.sourceOfFund_fieldValidation).all()
+            expect(Total_validations.length).toBe(3)
+            const Validation_text = await Total_validations[0].textContent()
+            if (Total_validations.length === 3) {
+                console.log(' All 3 validation messages are displayed as expected.')
+                console.log("validation message displayed is - "+Validation_text)
+            }
+            await this.page.reload()
+
+
+            //source of wealth validation
+            await this.page.click(this.sourceofwealth_addnewbutton)
+            await this.page.click(this.wealth_submitbutton)
+            console.log("Validating source of wealth validations....")
+            const Total_validations2 = await this.page.locator(this.sourceOfWealth_fieldValidation).all()
+            expect(Total_validations.length).toBe(3)
+            const Validation_text2 = await Total_validations2[0].textContent()
+            if (Total_validations2.length === 3) {
+                console.log(' All 3 validation messages are displayed as expected.')
+                console.log("validation message displayed is - "+Validation_text2)
+            }
+            await this.page.reload()
+
+
+            //Annual expected turn over validation
+
+
+            await this.page.click(this.pep_toggle)
+            await this.page.click(this.pep_addNew_button)
+            await this.page.click(this.pep_submit)
+            console.log("Validating Annual expected turnover validations....")
+            const Total_validations3 = await this.page.locator(this.pep_fieldValidation).all()
+            expect(Total_validations3.length).toBe(8)
+            const Validation_text3 = await Total_validations2[0].textContent()
+            if (Total_validations3.length === 8) {
+                console.log(' All 3 validation messages are displayed as expected.')
+                console.log("validation message displayed is - "+Validation_text3)
+            }
+
+        } 
 
     }

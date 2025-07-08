@@ -77,6 +77,8 @@ exports.DocumentUploadpage =
 
             this.Account_locked_status = "//h1[normalize-space()='Account Locked - KYC In review']"
 
+            this.largeFile_error = "//div[normalize-space()='Please select a file smaller than 10 MB.']"
+
             
 
         }
@@ -188,7 +190,7 @@ exports.DocumentUploadpage =
             await this.page.locator(this.addfile2).nth(1).setInputFiles(filePath)
             await this.page.waitForTimeout(5000)
             await this.page.click(this.uploadbutton2)
-            await this.page.waitForSelector(this.ok_button, { state: 'visible' });
+            await this.page.waitForSelector(this.ok_button, { state: 'visible' })
             await this.page.click(this.ok_button)
 
 
@@ -213,5 +215,33 @@ exports.DocumentUploadpage =
     
             
         }
+
+        async uploadLarge_file_size_ForKyc() {
+
+             const filenames = [
+               
+                'tests\\Document_upload\\Large file.zip'
+            ]
+
+            await this.page.click(this.ok_button)
+            await this.page.click(this.upload_1)
+            await this.page.waitForSelector(this.documenttype1, { state: 'visible' })
+
+            //await this.page.locator(this.documenttype1).selectOption(' Memorandum and Articles of Association of the company. * ')
+            await this.page.locator(this.documenttype1).selectOption('11');
+            await this.page.click(this.issuedatefield1)
+            await this.page.click(this.issuedateselect1)
+
+            const filePath = path.resolve(filenames[0])
+            await this.page.locator(this.addfile1).nth(0).setInputFiles(filePath)
+            await this.page.waitForTimeout(5000)
+            await expect(this.page.locator(this.largeFile_error)).toBeVisible()
+            const error_msg = await this.page.locator(this.largeFile_error).textContent()
+            console.log("Uploading failed - "+error_msg)
+            await this.page.click(this.ok_button)
+
+
+         }
+
     
     }

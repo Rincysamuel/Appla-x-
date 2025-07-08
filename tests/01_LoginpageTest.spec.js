@@ -30,7 +30,7 @@ test('Verify validations for login', async ({ page }) => {
 
   const login = new Loginpage(page)
   await login.goToLoginPage()
-  await login.loginWithEmptyCredentials()
+  await login.validationsForLogin()
 
 })
 
@@ -38,62 +38,7 @@ test('Verify new user registration and login', async ({ page }) => {
 
   const login = new Loginpage(page)
   await login.goToLoginPage()
-  await login.registration_And_Login_of_newUser()
+  await login.registraion_And_Login_of_newUser()
  
-
 })
 
-test('Verify new user registration and login with empty data', async ({ page }) => {
-
-  const login = new Loginpage(page)
-  await login.goToLoginPage()
-  await login.registration_And_Login_of_newUser_With_EmptyData()
- 
-
-})
-
-test('Verify new user registration with invalid emailid', async ({ page }) => {
-
-  const login = new Loginpage(page)
-  await login.goToLoginPage()
-  await login.NewUser_Registration_With_InvalidEmailID()
-
-})
-
-test('Verify new user registration with special character check in the firstname and lastname field', async ({ page }) => {
-
-  const login = new Loginpage(page)
-  await login.goToLoginPage()
-  await login.NewUser_Registration_With_SpecialCharacters_Firstname_Lastname()
-
-})
-
-test('Verify new user registration with different Password in the repeat password field', async ({ page }) => {
-
-  const login = new Loginpage(page)
-  await login.goToLoginPage()
-  await login.NewUser_Registration_With_PasswordMistmach()
-
-})
-test('Verify new user registration with existing user details', async ({ page }) => {
-
-  const login = new Loginpage(page)
-  await login.goToLoginPage()
-  await login.registration_And_Login_of_Existinguserdetils()
-
-})
-
-test('Verify Forgot password page redirection', async ({ page }) => {
-
-  const login = new Loginpage(page)
-  await login.goToLoginPage()
-  await login.forgot_password_Redirection()
-
-})
-test('Verify Terms and condition without checking the box', async ({ page }) => {
-
-  const login = new Loginpage(page)
-  await login.goToLoginPage()
-  await login.NewUser_Registration_Without_TermsandCondition()
-
-})

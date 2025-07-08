@@ -45,6 +45,14 @@ exports.Admindashboardpage =
 
             this.fee_amount = "//input[@placeholder='Fee Amount']"
 
+            this.fee_amount2 = "(//input[@placeholder='Fee Amount'])[2]"
+
+            this.addField_button = "//button[@id='add-field']"
+
+            this.minimum_value = "//input[@name='minimum_value[]']"
+
+            this.maximum_value = "//input[@name='maximum_value[]']"
+
             this.updatebutton2 = "//button[@id='updateButton']"
 
             this.ok_button = "//button[contains(text(), 'OK')]"
@@ -69,7 +77,7 @@ exports.Admindashboardpage =
 
             this.getfee_button = "//button[contains(text(), 'Get fee')]"
 
-            this.fee_listing = "(//p[@class='mb-0'])[2]"
+            this.fee_listing = "(//span[@style='float:right;'])[2]"
 
             this.external_reference_field = '#external_reference'
 
@@ -84,6 +92,8 @@ exports.Admindashboardpage =
 
 
             this.fundtransferredto_customerwallet = "(//span[@style='float:right;'])[3]"
+
+            this.euro_wallet = "(//span[normalize-space()='Euro'])[1]"
 
 
         }
@@ -153,24 +163,27 @@ exports.Admindashboardpage =
             await this.page.click(this.resetfilter_button)
             await this.page.waitForTimeout(3000)
             await this.page.locator(this.dropdown_2).selectOption('Inbound Swift');
-            await this.page.locator(this.fee_amount).clear()
-            await this.page.fill(this.fee_amount, '25');
-            await this.page.click(this.updatebutton2);
-            await this.page.click(this.ok_button);
-
-            await this.page.locator(this.dropdown_2).selectOption('Inbound Sepa');
+            await this.page.fill(this.maximum_value,'10000')
             await this.page.locator(this.fee_amount).clear()
             await this.page.fill(this.fee_amount, '30');
             await this.page.click(this.updatebutton2);
             await this.page.click(this.ok_button);
 
+            await this.page.locator(this.dropdown_2).selectOption('Inbound Sepa');
+            await this.page.fill(this.maximum_value,'10000')
+            await this.page.locator(this.fee_amount).clear()
+            await this.page.waitForTimeout(2000)
+            await this.page.fill(this.fee_amount, '40');
+            await this.page.click(this.updatebutton2);
+            await this.page.click(this.ok_button);
+
         }
 
+       
+        async checkGetFee_calculation(){
 
-        async verifyWalletcreation() {
-
-            const filePath = path.join(__dirname, '../companyname.json');
-            const { company_name } = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+            const filePath = path.join(__dirname, '../companyname.json')
+            const { company_name } = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
 
             await this.page.waitForSelector(this.accountholders_tab)
             await this.page.click(this.accountholders_tab)
@@ -178,6 +191,63 @@ exports.Admindashboardpage =
             await this.page.fill(this.keywords_field, company_name)
             await this.page.click(this.search_button)
 
+            await this.page.waitForSelector(this.companysearchresult)
+            const companies = await this.page.locator(this.companysearchresult).all()
+            for (const company of companies) {
+                const name = (await company.textContent())?.trim()
+                console.log("Company:", name)
+
+                if (name && name.includes(company_name)) {
+                    await company.click()
+                    break
+                }
+            }
+
+            await this.page.locator(this.dropdown).click()
+            await this.page.waitForTimeout(3000)
+            await this.page.locator(this.payment_list).click();
+            await this.page.waitForTimeout(5000)
+
+            
+            await this.page.click(this.addnew_button);
+            await this.page.locator(this.wallet_currency_dropdown).selectOption('EUR | Euro')
+            await this.page.click(this.wallet_submit)
+            await this.page.waitForTimeout(3000)
+
+            await this.page.click(this.euro_wallet)
+            await this.page.waitForSelector(this.paymenttype_dropdown)
+            await this.page.locator(this.paymenttype_dropdown).selectOption('swift')
+            await this.page.fill(this.wallet_fund_field, '5000')
+            await this.page.click(this.getfee_button)
+            await this.page.waitForSelector(this.fee_listing)
+            const swift_feeText = await this.page.locator(this.fee_listing).textContent()
+            const swift_feeAmount = parseFloat(swift_feeText?.match(/[\d.]+/)?.[0])
+            expect(swift_feeAmount).toBe(30)
+            console.log("30 EURO deducted ....")
+            await this.page.waitForTimeout(3000)
+
+            await this.page.fill(this.wallet_fund_field, '')
+            await this.page.locator(this.paymenttype_dropdown).selectOption('sepa')
+            await this.page.fill(this.wallet_fund_field, '5000')
+            await this.page.click(this.getfee_button)
+            await this.page.waitForSelector(this.fee_listing)
+            const feeText = await this.page.locator(this.fee_listing).textContent()
+            const feeAmount = parseFloat(feeText?.match(/[\d.]+/)?.[0])
+            expect(feeAmount).toBe(40)
+             console.log("40 EURO deducted ....")
+  
+
+        }
+
+        async paymentFeeSettingFor_different_payment_types() {
+            const filePath = path.join(__dirname, '../companyname.json');
+            const { company_name } = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+
+            await this.page.waitForSelector(this.accountholders_tab);
+            await this.page.click(this.accountholders_tab);
+            await this.page.click(this.find_a_company);
+            await this.page.fill(this.keywords_field, company_name);
+            await this.page.click(this.search_button);
             await this.page.waitForSelector(this.companysearchresult)
             const companies = await this.page.locator(this.companysearchresult).all();
             for (const company of companies) {
@@ -190,16 +260,77 @@ exports.Admindashboardpage =
                 }
             }
 
+
             await this.page.locator(this.dropdown).click();
-            await this.page.locator(this.businessinformation).click();
+            await this.page.click(this.paymentfeeMaintanence);
+
+            //sepa fee for payment between 0 - 1000
+            await this.page.click(this.resetfilter_button)
+            await this.page.waitForTimeout(3000)
+            await this.page.locator(this.dropdown_2).selectOption('Sepa fee')
+            await this.page.fill(this.maximum_value,'1000')
+            await this.page.fill(this.fee_amount,'')
+            await this.page.fill(this.fee_amount, '25')
+            await this.page.click(this.updatebutton2)
+            await this.page.click(this.ok_button)
+
+            //sepa fee for payment between 1001- 3000
+            await this.page.click(this.addField_button)
+            await this.page.fill(this.minimum_value,'1001')
+            await this.page.fill(this.maximum_value,'3000')
+            await this.page.fill(this.fee_amount2,'')
+            await this.page.waitForTimeout(2000)
+            await this.page.fill(this.fee_amount2, '30')
+            await this.page.waitForTimeout(2000)
+            await this.page.click(this.updatebutton2)
+            await this.page.click(this.ok_button)
+
+            //payment fee setting for shared fee
+            await this.page.locator(this.dropdown_2).selectOption('Shared fee')
+            await this.page.fill(this.minimum_value,'1001')
+            await this.page.fill(this.maximum_value,'3000')
+            await this.page.fill(this.fee_amount,'')
+            await this.page.fill(this.fee_amount, '40')
+            await this.page.click(this.updatebutton2)
+            await this.page.click(this.ok_button)
+  
+        }
+
+
+
+        async verifyWalletcreation() {
+
+            const filePath = path.join(__dirname, '../companyname.json')
+            const { company_name } = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+
+            await this.page.waitForSelector(this.accountholders_tab)
+            await this.page.click(this.accountholders_tab)
+            await this.page.click(this.find_a_company)
+            await this.page.fill(this.keywords_field, company_name)
+            await this.page.click(this.search_button)
+
+            await this.page.waitForSelector(this.companysearchresult)
+            const companies = await this.page.locator(this.companysearchresult).all()
+            for (const company of companies) {
+                const name = (await company.textContent())?.trim()
+                console.log("Company:", name)
+
+                if (name && name.includes(company_name)) {
+                    await company.click()
+                    break
+                }
+            }
+
+            await this.page.locator(this.dropdown).click()
+            await this.page.locator(this.businessinformation).click()
 
             await this.page.waitForSelector(this.checking_basecurrency)
             const base_currencyraw = await this.page.locator(this.checking_basecurrency).textContent()
-            const base_currency = base_currencyraw.toLowerCase().trim();
+            const base_currency = base_currencyraw.toLowerCase().trim()
             console.log("base currency - " + base_currency)
             await this.page.waitForTimeout(3000)
 
-            await this.page.locator(this.dropdown).click();
+            await this.page.locator(this.dropdown).click()
             await this.page.waitForTimeout(3000)
             await this.page.locator(this.payment_list).click();
             await this.page.waitForTimeout(5000)
@@ -404,64 +535,64 @@ exports.Admindashboardpage =
                     baseWallet = item;
                     const balanceText = await item.locator(this.wallet_balance).textContent()
                     baseBefore = parseFloat(balanceText.match(/[\d,.]+/)?.[0].replace(/,/g, ''))
-                } 
+                }
 
-            await this.page.waitForTimeout(5000)
-            await this.page.click(this.addnew_button)
-            await this.page.locator(this.wallet_currency_dropdown).selectOption('AUD | AUD')
-            await this.page.click(this.wallet_submit)
-            await this.page.waitForTimeout(4000)
-            const newWallets = this.page.locator(this.paymentlist_wallets);
-            const walletCount = await newWallets.count()
+                await this.page.waitForTimeout(5000)
+                await this.page.click(this.addnew_button)
+                await this.page.locator(this.wallet_currency_dropdown).selectOption('AUD | AUD')
+                await this.page.click(this.wallet_submit)
+                await this.page.waitForTimeout(4000)
+                const newWallets = this.page.locator(this.paymentlist_wallets);
+                const walletCount = await newWallets.count()
 
-            for (let i = 0; i < walletCount; i++) {
-                const item = newWallets.nth(i)
-                const text = await item.textContent()
-                const label = text?.toLowerCase().trim()
-                const firstThree = label.replace(/[^a-z]/g, '').substring(0, 3)
+                for (let i = 0; i < walletCount; i++) {
+                    const item = newWallets.nth(i)
+                    const text = await item.textContent()
+                    const label = text?.toLowerCase().trim()
+                    const firstThree = label.replace(/[^a-z]/g, '').substring(0, 3)
 
-                if (firstThree === 'aud') {
-                    await item.click()
-                    await this.page.waitForSelector(this.paymenttype_dropdown);
-                    await this.page.locator(this.paymenttype_dropdown).selectOption('swift');
-                    await this.page.fill(this.wallet_fund_field, '10000');
-                    await this.page.click(this.getfee_button);
-                    await this.page.waitForSelector(this.fee_listing);
+                    if (firstThree === 'aud') {
+                        await item.click()
+                        await this.page.waitForSelector(this.paymenttype_dropdown);
+                        await this.page.locator(this.paymenttype_dropdown).selectOption('swift');
+                        await this.page.fill(this.wallet_fund_field, '10000');
+                        await this.page.click(this.getfee_button);
+                        await this.page.waitForSelector(this.fee_listing);
 
-                    const added_fund = await this.page.locator(this.fundtransferredto_customerwallet).textContent();
-                    const amount = parseFloat(added_fund?.match(/[\d,.]+/)?.[0].replace(/,/g, ''));
+                        const added_fund = await this.page.locator(this.fundtransferredto_customerwallet).textContent();
+                        const amount = parseFloat(added_fund?.match(/[\d,.]+/)?.[0].replace(/,/g, ''));
 
-                    await this.page.fill(this.external_reference_field, 'no external reference');
-                    await this.page.click(this.credit_button);
-                    await this.page.waitForSelector(this.fundsuccess_ok);
-                    await this.page.click(this.fundsuccess_ok);
+                        await this.page.fill(this.external_reference_field, 'no external reference');
+                        await this.page.click(this.credit_button);
+                        await this.page.waitForSelector(this.fundsuccess_ok);
+                        await this.page.click(this.fundsuccess_ok);
 
 
-                    let baseAfter = 0
-                    for (let i = 0; i < updatedCount; i++) {
-                        const item = updatedWallets.nth(i)
-                        const text = await item.textContent()
-                        const label = text?.toLowerCase().trim()
-                        const firstThree = label.replace(/[^a-z]/g, '').substring(0, 3)
+                        let baseAfter = 0
+                        for (let i = 0; i < updatedCount; i++) {
+                            const item = updatedWallets.nth(i)
+                            const text = await item.textContent()
+                            const label = text?.toLowerCase().trim()
+                            const firstThree = label.replace(/[^a-z]/g, '').substring(0, 3)
 
-                        if (firstThree === base_currency) {
-                            const balanceText = await item.locator(this.wallet_balance).textContent();
-                            baseAfter = parseFloat(balanceText.match(/[\d,.]+/)?.[0].replace(/,/g, ''));
-                            break;
+                            if (firstThree === base_currency) {
+                                const balanceText = await item.locator(this.wallet_balance).textContent();
+                                baseAfter = parseFloat(balanceText.match(/[\d,.]+/)?.[0].replace(/,/g, ''));
+                                break;
+                            }
+                        }
+
+                        // 6. Validate the balance
+                        const expectedAfter = baseBefore + amount;
+                        if (Math.abs(baseAfter - expectedAfter) < 0.01) {
+                            console.log(" Base wallet updated correctly after non-base wallet funding.New Available balance - " + expectedAfter);
+                        } else {
+                            console.error(` Mismatch. Expected: ${expectedAfter}, Found: ${baseAfter}`);
+                            throw new Error("Wallet balance validation failed");
                         }
                     }
 
-                    // 6. Validate the balance
-                    const expectedAfter = baseBefore + amount;
-                    if (Math.abs(baseAfter - expectedAfter) < 0.01) {
-                        console.log(" Base wallet updated correctly after non-base wallet funding.New Available balance - " + expectedAfter);
-                    } else {
-                        console.error(` Mismatch. Expected: ${expectedAfter}, Found: ${baseAfter}`);
-                        throw new Error("Wallet balance validation failed");
-                    }
                 }
-
-            }
             }
         }
 

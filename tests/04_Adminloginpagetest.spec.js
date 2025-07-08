@@ -6,7 +6,7 @@ import { Admindashboardpage } from '../pages/Admindashboardpage';
 import { Loginpage } from '../pages/Loginpage';
 import { Dashboardpage } from '../pages/Dashboardpage';
 
-/*test('Verify Account status gets active after company approval by admin', async ({ page }) => {
+test('Verify Account status gets active after company approval by admin', async ({ page }) => {
 
     const login1 =  new Adminloginpage(page)
     await login1.goToAdminLoginPage()
@@ -36,6 +36,28 @@ test('Verify setting company maintanence fee', async ({ page }) => {
     
 })
 
+test('Verify different payment fees against different amounts can be set for different payment types.',async ({ page }) => {
+
+    const login =  new Adminloginpage(page)
+    await login.goToAdminLoginPage()
+    await login.verifyAdminlogin('ajay.vr@seqato.com','U3lqi7dx')
+
+    const dashboard = new Admindashboardpage(page)
+    await dashboard.paymentFeeSettingFor_different_payment_types()
+
+})
+
+test('Verify get fee calculation during varies from one payment type to other',async ({ page }) => {
+
+    const login =  new Adminloginpage(page)
+    await login.goToAdminLoginPage()
+    await login.verifyAdminlogin('ajay.vr@seqato.com','U3lqi7dx')
+
+    const dashboard = new Admindashboardpage(page)
+    await dashboard.paymentFeeSettingFor_different_payment_types()
+
+})
+
 test('Verify wallet creation for holding account', async ({ page }) => {
 
     const login =  new Adminloginpage(page)
@@ -47,9 +69,9 @@ test('Verify wallet creation for holding account', async ({ page }) => {
     const dashboard = new Admindashboardpage(page)
     await dashboard.verifyWalletcreation()  
     
-})*/
+})
 
-test('Verify wallet creation and funding for AUD', async ({ page }) => {
+test('Verify funding is deposited in base currency wallet', async ({ page }) => {
 
     const login =  new Adminloginpage(page)
 
@@ -58,11 +80,11 @@ test('Verify wallet creation and funding for AUD', async ({ page }) => {
 
 
     const dashboard = new Admindashboardpage(page)
-    await dashboard.walletandFundingforAud()
+    await dashboard.verify_fundingdoneInnon_holding_currencyWallets_areConvertedandDeposited_in_basecurrency_wallet()
     
 })
 
-/*test('Verify wallet creation for non holding account', async ({ page }) => {
+test('Verify wallet creation for non holding account', async ({ page }) => {
 
     const login =  new Adminloginpage(page)
     await login.goToAdminLoginPage()
@@ -85,4 +107,4 @@ test('Verify creating wallet for all currencies', async ({ page }) => {
     await dashboard.createAndFundWalletsForAllCurrenciesRandomly()
    
     
-})*/
+})

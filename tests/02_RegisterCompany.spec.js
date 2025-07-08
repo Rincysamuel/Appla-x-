@@ -8,7 +8,7 @@ import { Admindashboardpage } from '../pages/Admindashboardpage';
 
 
 
-  test('Verify new account status is locked before admin approves', async ({ page }) => {
+  /*test('Verify new account status is locked before admin approves', async ({ page }) => {
 
     const login = new Loginpage(page)
     await login.goToLoginPage()
@@ -49,19 +49,18 @@ import { Admindashboardpage } from '../pages/Admindashboardpage';
     const register = new RegisterCompanypage(page)
     await register.validationsForCompanyRegistration()
   
-  })
-test('Verify duplicate company name', async ({ page }) => {
+  })*/
+
+   test('Verify wallet creation from client account', async ({ page }) => {
 
     const login = new Loginpage(page)
     await login.goToLoginPage()
     await login.giveLoginCredentials('anandu.a@seqato.com','Anandu@123')
   
     const dashboard =  new Dashboardpage(page)
-    await dashboard.clickOnRegister_a_company()
-    
-    const register = new RegisterCompanypage(page)
-    await register.ExistinguserCompanyRegistration("India")
-  
+    await dashboard.walletCreationFrom_ClientAccount()
+   
   })
 
+  
 

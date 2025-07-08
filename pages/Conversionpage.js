@@ -24,6 +24,8 @@ exports.Conversionpage =
 
             this.select_beneficiary = "//select[@id='beneficiary']"
 
+            this.beneficiary_error = "//label[@id='beneficiary-error']"
+
             this.payment_charge_type = "//select[@id='paymentChargeType']"
 
             this.payment_reason = "//select[@id='paymentReason']"
@@ -173,6 +175,29 @@ exports.Conversionpage =
             await this.page.click(this.convert_button)
             await this.page.waitForSelector(this.dealsuccess_ok)
             await this.page.click(this.dealsuccess_ok)
+
+        }
+
+        async verifyDirect_Conversion_is_possible_to_non_holding_currencies() {
+
+            await this.page.click(this.eurowallet)
+            await this.page.click(this.convert_funds)
+            await this.page.waitForSelector(this.buy_currency)
+            await this.page.locator(this.buy_currency).selectOption('AUD | AUD')
+            await this.page.locator(this.amount_to_dropdown).selectOption('Sell')
+            await this.page.fill(this.amount_to, '500')
+            await this.page.waitForTimeout(3000)
+            await this.page.locator(this.payment_charge_type).selectOption('Shared fee')
+            await this.page.locator(this.payment_reason).selectOption('Investment related payment')
+            await this.page.fill(this.payment_reference, '3456')
+            await this.page.click(this.get_otp)
+            await this.page.waitForSelector(this.ok_got_it)
+            await this.page.click(this.ok_got_it)
+
+            await this.page.pause()
+            await this.page.click(this.next_button)
+            await expect(this.page.locator(this.beneficiary_error)).toBeVisible()
+            console.log("Beneficiary required for non holding currency...")
 
         }
     }

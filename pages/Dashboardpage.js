@@ -22,7 +22,13 @@ exports.Dashboardpage =
 
             this.new_walletCreation_card = "//div[@class='card-body d-flex justify-content-between align-items-start flex-column']"
 
-            //this.ok_button = "button.swal2-confirm"
+            this.walletCurrency_dropdown = "//select[@id='new_wallet_currency']"
+
+            this.createWallet_button = "//button[@id='submitButton']"
+
+            this.wallet_ok_button = "//button[@class='swal2-confirm swal2-styled']"
+
+            this.wallet_Lists = "//div[@class='owl-stage']//div[@class='item']"
 
 
         }
@@ -33,7 +39,7 @@ exports.Dashboardpage =
 
 
         async clickOnRegister_a_company() {
-            //await this.page.click(this.ok_button)
+
             const okButtonVisible = await this.page.locator(this.ok_button).isVisible().catch(() => false);
             if (okButtonVisible) {
 
@@ -52,7 +58,7 @@ exports.Dashboardpage =
             await this.page.waitForTimeout(3000)
         }
 
-        async new_account_Status_before_AdminApproval(){
+        async new_account_Status_before_AdminApproval() {
             const okButtonVisible = await this.page.locator(this.ok_button).isVisible().catch(() => false);
             if (okButtonVisible) {
 
@@ -60,24 +66,51 @@ exports.Dashboardpage =
             }
             await this.page.waitForSelector(this.Account_locked_status)
             const accountstatus = await this.page.locator(this.Account_locked_status).textContent()
-            console.log("Status of Account before admin approval-"+" "+accountstatus)
-            expect(accountstatus?.trim()).toContain('Account Locked - KYC In review');
+            console.log("Status of Account before admin approval-" + " " + accountstatus)
+            expect(accountstatus?.trim()).toContain('Account Locked - KYC In review')
 
-            
+
         }
 
         async new_account_Status_after_AdminApproval() {
 
-            const okButtonVisible = await this.page.locator(this.ok_button).isVisible().catch(() => false);
+            const okButtonVisible = await this.page.locator(this.ok_button).isVisible().catch(() => false)
             if (okButtonVisible) {
 
-                await this.page.click(this.ok_button);
+                await this.page.click(this.ok_button)
             }
-            const isLockedStatusVisible = await this.page.locator(this.Account_locked_status).isVisible().catch(() => false);
-            expect(isLockedStatusVisible).toBeFalsy(); 
+            const isLockedStatusVisible = await this.page.locator(this.Account_locked_status).isVisible().catch(() => false)
+            expect(isLockedStatusVisible).toBeFalsy()
+
+            await expect(this.page.locator(this.new_walletCreation_card)).toBeVisible()
+            console.log("New wallet creation card is visible..")
             console.log("Account activated successfully...")
-   
-            
+
+
+        }
+
+        async walletCreationFrom_ClientAccount() {
+
+            await this.page.click(this.new_walletCreation_card)
+            await this.page.locator(this.walletCurrency_dropdown).selectOption('CHF')
+            await this.page.click(this.createWallet_button)
+            await this.page.click(this.wallet_ok_button)
+
+            let found=false
+            const wallet_lists = await this.page.locator(this.wallet_Lists).all()
+            for (const item of wallet_lists) {
+                const text = await item.textContent()
+                if (text.includes('CHF')) {
+                    found = true
+                    console.log(" CHF wallet successfully added.");
+                    break
+                }
+            }
+            if (!found) {
+                console.error("❌ CHF wallet not found in wallet list.");
+                throw new Error("Wallet creation failed: GBP not found.");
+            }
+
         }
 
     }

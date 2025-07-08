@@ -93,7 +93,7 @@ exports.RegisterCompanypage =
             await this.page.fill(this.companyname_field, company_name)
             await this.page.click(this.submit_button)
             const isErrorVisible3 = await this.page.locator(this.companyName_error2).isVisible()
-            if (isErrorVisible3) {
+             if (isErrorVisible3) {
                 const jurisdiction_validation = await this.page.locator(this.jurisdiction_error).textContent()
                 console.log("Jurisdiction -" + jurisdiction_validation)
             } else {
@@ -101,7 +101,7 @@ exports.RegisterCompanypage =
             }
             await this.page.reload();
             await this.page.waitForTimeout(3000)
-
+           
 
             //company reg without company name
             console.log("Clicking submit button with jurisdiction only")
@@ -115,31 +115,10 @@ exports.RegisterCompanypage =
             } else {
                 console.log("No company name error displayed.")
             }
-
+    
 
         }
 
-        async ExistinguserCompanyRegistration(jurisdiction) {
-
-
-            await this.page.fill(this.companyname_field, "Smitham-Schmidt")
-            await this.page.click(this.jurisdiction_field)
-            await this.page.fill(this.searchOn_Jurisdiction, jurisdiction)
-            const company_suggestions = await this.page.$$(this.suggestionsOn_jurisdiction)
-            for (let required_company of company_suggestions) {
-                const required = await required_company.textContent()
-                if (required.includes(jurisdiction)) {
-                    await required_company.click()
-                    break
-                }
-            }
-
-            await this.page.click(this.submit_button)
-            await this.page.waitForTimeout(6000)
-            const actualmessage = await this.page.locator(this.dialogbox).textContent()
-            const expectedmessage = "The company name is already taken"
-
-            expect(actualmessage?.trim()).toBe(expectedmessage);
-        }
 
     }
+

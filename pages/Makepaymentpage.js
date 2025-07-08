@@ -18,8 +18,8 @@ exports.Makepaymentpage =
 
             this.amount = "//input[@name='amount']"
 
-            
-            
+
+
             this.beneficiary_name = "//select[@id='beneficiary']"
 
             this.beneficiary_field_error = "//label[@id='beneficiary-error']"
@@ -46,7 +46,7 @@ exports.Makepaymentpage =
 
         }
 
-        async verify_Payment_CannotbeDone_without_creating_benefeciary_for_corresponding_currency () {
+        async verify_Payment_CannotbeDone_without_creating_benefeciary_for_corresponding_currency() {
 
 
             //const filePath = path.join(__dirname, '../beneficiary_company.json');
@@ -56,14 +56,14 @@ exports.Makepaymentpage =
 
             await this.page.click(this.eurowallet)
             await this.page.waitForSelector(this.make_payment)
-            
+
             await this.page.click(this.make_payment)
             await this.page.waitForSelector(this.amount)
             await this.page.fill(this.amount, '300')
             await this.page.waitForTimeout(2000)
-    
+
             console.log("Not choosing a beneficiary from dropdown")
-           
+
             await this.page.click(this.select_a_payer)
             await expect(this.page.locator(this.beneficiary_field_error)).toBeVisible();
             const error_msg = await this.page.locator(this.beneficiary_field_error).textContent()
@@ -80,16 +80,17 @@ exports.Makepaymentpage =
 
             await this.page.click(this.eurowallet)
             await this.page.waitForSelector(this.make_payment)
-            
+
             await this.page.click(this.make_payment)
             await this.page.waitForSelector(this.amount)
             await this.page.fill(this.amount, '300')
             await this.page.waitForTimeout(2000)
-        
+
             const optionLocator = this.page.locator(this.beneficiary_name).locator('option', { hasText: new RegExp(euro_beneficiary_company_name, 'i') });
+            await expect(optionLocator).toBeVisible();
             const value = await optionLocator.getAttribute('value');
             await this.page.locator(this.beneficiary_name).selectOption({ value });
-           
+
             await this.page.click(this.select_a_payer)
             await this.page.locator(this.payment_reason).selectOption('Investment related payment')
             await this.page.fill(this.payment_reference, '6787')
@@ -104,7 +105,7 @@ exports.Makepaymentpage =
 
         }
 
-         async verifypayment_can_be_created_without_having_any_amount_in_wallet() {
+        async verifypayment_can_be_created_without_having_any_amount_in_wallet() {
 
             const filePath = path.join(__dirname, '../beneficiary_company.json');
             const { euro_beneficiary_company_name } = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
@@ -113,21 +114,20 @@ exports.Makepaymentpage =
 
             await this.page.click(this.aud_wallet)
             await this.page.waitForSelector(this.make_payment)
-            
+
             await this.page.click(this.make_payment)
             await this.page.waitForSelector(this.amount)
             await this.page.fill(this.amount, '300')
-        
+
             await expect(this.page.locator(this.insufficientBalance_error)).toBeVisible();
 
             const error_msg = await this.page.locator(this.insufficientBalance_error).textContent()
-            console.log("error msg on amount field -"+error_msg)
+            console.log("error msg on amount field -" + error_msg)
 
 
         }
 
 
+       
+    }
 
-
-   }
-    
